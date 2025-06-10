@@ -124,12 +124,13 @@ with col1_right:
         try:
             data1 = np.loadtxt(file_sa1).flatten(order='C')
             time1 = np.arange(0, len(data1) * dt, dt)
-            fig1, ax1 = plt.subplots(figsize=(1, 0.5))
+            fig1, ax1 = plt.subplots(figsize=(2, 1))
             ax1.plot(time1, data1)
             ax1.set_xlabel("Time (sec)")
             ax1.set_ylabel("Sa (g)")
             ax1.set_title("Sa1 Time History")
-            st.pyplot(fig1)
+            plt.tight_layout() 
+            st.pyplot(fig1, bbox_inches='tight', use_container_width=True)
         except Exception as e:
             st.error(f"Error reading Sa1: {e}")
 
@@ -142,12 +143,13 @@ with col2_right:
         try:
             data2 = np.loadtxt(file_sa2).flatten(order='C')
             time2 = np.arange(0, len(data2) * dt, dt)
-            fig2, ax2 = plt.subplots(figsize=(1, 0.5))
+            fig2, ax2 = plt.subplots(figsize=(2, 1))
             ax2.plot(time2, data2)
             ax2.set_xlabel("Time (sec)")
             ax2.set_ylabel("Sa (g)")
             ax2.set_title("Sa2 Time History")
-            st.pyplot(fig2)
+            plt.tight_layout()
+            st.pyplot(fig2, bbox_inches='tight', use_container_width=True)
         except Exception as e:
             st.error(f"Error reading Sa2: {e}")
 
