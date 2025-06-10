@@ -1,6 +1,6 @@
 # Stacked Attention LSTM for Multi-Hazard Response Prediction of SMRF Buildings
 
-Welcome to the **Stacked Attention LSTM for Multi-Hazard Response Prediction of SMRF Buildings** repository! This project provides a user-friendly web application built with Streamlit that predicts the Multi-Hazard Immediate Seismic Response (MISR) of SMRF (Special Moment Resisting Frame) buildings. This can help engineers and researchers understand how structures perform under multiple hazards.
+Welcome to the **Stacked Attention LSTM for Multi-Hazard Response Prediction of SMRF Buildings** repository! This project provides a user-friendly web application built with Streamlit that predicts the Maximum inter storey drift ration (MIDR) of SMRF (Special Moment Resisting Frame) buildings exposed to sequential flood and earthquake. This can help engineers and researchers understand how structures perform under multiple hazards.
 
 # Features
 Predicts MISR given input parameters.  
@@ -36,6 +36,7 @@ Follow these steps to run the app on your own machine:
 ```bash
 git clone https://github.com/DelbazSamadian/Stacked-Atten-LSTM-for-Multi-Hazard-Response-Prediction-of-SMRF-Buildings.git
 cd Stacked-Atten-LSTM-for-Multi-Hazard-Response-Prediction-of-SMRF-Buildings
+  
 
   ## 2. (Optional but Recommended) Create a Virtual Environment
 # Windows:
