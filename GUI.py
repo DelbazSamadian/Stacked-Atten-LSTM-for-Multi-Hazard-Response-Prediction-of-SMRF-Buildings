@@ -105,41 +105,44 @@ model = AttLSTM(input_size=2, static_input_size=49)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
-# 5️⃣ Layout: 5 Columns
-cols = st.columns([1, 1, 1, 1, 1])
+# 🟠 Horizontal layout: Sa1 and Sa2 uploaders and time histories side by side
+cols_top = st.columns([1, 2, 1, 2])  # uploader, plot, uploader, plot
 
-# 🟠 Column 1: Sa1 and Sa2 Uploaders
-with cols[0]:
+# Sa1 Upload and Plot
+with cols_top[0]:
     dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
-    file_sa1 = st.file_uploader("Sa1 Component (.txt)", type="txt")
-    file_sa2 = st.file_uploader("Sa2 Component (.txt)", type="txt")
-
-# 🟠 Column 2: Sa1 and Sa2 Time History Plots
-with cols[1]:
+    file_sa1 = st.file_uploader("Sa1 Component (.txt)", type="txt", key="sa1")
+with cols_top[1]:
     if file_sa1:
         try:
             data1 = np.loadtxt(file_sa1).flatten(order='C')
             time1 = np.arange(0, len(data1) * dt, dt)
-            fig1, ax1 = plt.subplots(figsize=(4, 2))
-            ax1.plot(time1, data1)
+            fig1, ax1 = plt.subplots(figsize=(6, 2.5))
+            ax1.plot(time1, data1, color='b')
             ax1.set_xlabel("Time (sec)")
             ax1.set_ylabel("Sa (g)")
             ax1.set_title("Sa1 Time History")
             st.pyplot(fig1)
         except Exception as e:
             st.error(f"Error reading Sa1: {e}")
+
+# Sa2 Upload and Plot
+with cols_top[2]:
+    file_sa2 = st.file_uploader("Sa2 Component (.txt)", type="txt", key="sa2")
+with cols_top[3]:
     if file_sa2:
         try:
             data2 = np.loadtxt(file_sa2).flatten(order='C')
             time2 = np.arange(0, len(data2) * dt, dt)
-            fig2, ax2 = plt.subplots(figsize=(4, 2))
-            ax2.plot(time2, data2)
+            fig2, ax2 = plt.subplots(figsize=(6, 2.5))
+            ax2.plot(time2, data2, color='r')
             ax2.set_xlabel("Time (sec)")
             ax2.set_ylabel("Sa (g)")
             ax2.set_title("Sa2 Time History")
             st.pyplot(fig2)
         except Exception as e:
             st.error(f"Error reading Sa2: {e}")
+
 
 # 🟠 Columns 3 and 4: Top 10 Features
 top_features = {
