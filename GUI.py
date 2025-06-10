@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 
-# 0️⃣ Custom CSS for fonts and styling
+# 0️⃣ Custom CSS
 st.markdown("""
     <style>
     body, .stApp, .block-container {
@@ -36,9 +36,6 @@ st.markdown("""
         font-family: 'Times New Roman', Times, serif;
     }
     .stMarkdown, .stSubheader, .stHeading, .stSuccess, .stWarning {
-        font-family: 'Times New Roman', Times, serif;
-    }
-    .stTextInput label, .stNumberInput label {
         font-family: 'Times New Roman', Times, serif;
     }
     </style>
@@ -105,20 +102,20 @@ model = AttLSTM(input_size=2, static_input_size=49)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
-# 🟠 Horizontal layout: Sa1 and Sa2 uploaders and time histories side by side
-cols_top = st.columns([1, 2, 1, 2])  # uploader, plot, uploader, plot
+# 5️⃣ Time Histories + Uploads
+dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
 
-# Sa1 Upload and Plot
-with cols_top[0]:
-    dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
-    file_sa1 = st.file_uploader("Sa1 Component (.txt)", type="txt", key="sa1")
-with cols_top[1]:
+st.subheader("1️⃣ Sa1 Component")
+col1_left, col1_right = st.columns([1, 2])
+with col1_left:
+    file_sa1 = st.file_uploader("Upload Sa1 (.txt)", type="txt")
+with col1_right:
     if file_sa1:
         try:
             data1 = np.loadtxt(file_sa1).flatten(order='C')
             time1 = np.arange(0, len(data1) * dt, dt)
-            fig1, ax1 = plt.subplots(figsize=(6, 2.5))
-            ax1.plot(time1, data1, color='b')
+            fig1, ax1 = plt.subplots(figsize=(5, 2.5))
+            ax1.plot(time1, data1)
             ax1.set_xlabel("Time (sec)")
             ax1.set_ylabel("Sa (g)")
             ax1.set_title("Sa1 Time History")
@@ -126,16 +123,17 @@ with cols_top[1]:
         except Exception as e:
             st.error(f"Error reading Sa1: {e}")
 
-# Sa2 Upload and Plot
-with cols_top[2]:
-    file_sa2 = st.file_uploader("Sa2 Component (.txt)", type="txt", key="sa2")
-with cols_top[3]:
+st.subheader("2️⃣ Sa2 Component")
+col2_left, col2_right = st.columns([1, 2])
+with col2_left:
+    file_sa2 = st.file_uploader("Upload Sa2 (.txt)", type="txt")
+with col2_right:
     if file_sa2:
         try:
             data2 = np.loadtxt(file_sa2).flatten(order='C')
             time2 = np.arange(0, len(data2) * dt, dt)
-            fig2, ax2 = plt.subplots(figsize=(6, 2.5))
-            ax2.plot(time2, data2, color='r')
+            fig2, ax2 = plt.subplots(figsize=(5, 2.5))
+            ax2.plot(time2, data2)
             ax2.set_xlabel("Time (sec)")
             ax2.set_ylabel("Sa (g)")
             ax2.set_title("Sa2 Time History")
@@ -143,8 +141,8 @@ with cols_top[3]:
         except Exception as e:
             st.error(f"Error reading Sa2: {e}")
 
-
-# 🟠 Columns 3 and 4: Top 10 Features
+# 6️⃣ Top 10 Features
+st.subheader("3️⃣ Enter Top 10 Most Important Features")
 top_features = {
     'T1': 'Fundamental Period',
     'FH': 'Flood Height',
@@ -158,39 +156,41 @@ top_features = {
     'someFeature10': 'Additional Feature 10'
 }
 user_inputs = {}
-feature_keys = list(top_features.keys())
-for idx, key in enumerate(feature_keys):
-    col = cols[2] if idx < 5 else cols[3]
-    desc = top_features[key]
-    default_val = feature_means.get(key, 0.0)
-    user_inputs[key] = col.number_input(f"{key} ({desc}):", value=default_val)
+keys = list(top_features.keys())
+for i in range(0, len(keys), 2):
+    row = st.columns(2)
+    for j in range(2):
+        if i + j < len(keys):
+            key = keys[i + j]
+            desc = top_features[key]
+            default_val = feature_means.get(key, 0.0)
+            user_inputs[key] = row[j].number_input(f"{key} ({desc}):", value=default_val)
 
-# 🟠 Column 5: MIDR Prediction
-with cols[4]:
-    st.subheader("MIDR Prediction")
-    if st.button("Predict MIDR"):
-        if file_sa1 and file_sa2:
-            def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
-            ts1 = norm(data1)
-            ts2 = norm(data2)
-            TIME_STEPS = 9000
-            pad_len = 9000 - min(len(ts1), len(ts2))
-            ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
-            ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
-            ts_data = np.stack((ts1, ts2), axis=1)
-            step = int(120 * (1 - 0.5))
-            stacked_input = [torch.tensor(ts_data[i:i+120], dtype=torch.float32)
-                             for i in range(0, TIME_STEPS - 120 + 1, step)]
-            x_ts = torch.stack(stacked_input).unsqueeze(0)
-            static_inputs = []
-            for col in input_cols:
-                val = user_inputs.get(col, feature_means.get(col, 0.0))
-                std = feature_stds.get(col, 1.0)
-                mean = feature_means.get(col, 0.0)
-                static_inputs.append((val - mean) / std)
-            x_static = torch.tensor([static_inputs], dtype=torch.float32)
-            with torch.no_grad():
-                midr = model(x_ts, x_static).cpu().item()
-            st.success(f"Predicted MIDR: {midr:.6f}")
-        else:
-            st.warning("Upload both Sa1 & Sa2 and enter dt.")
+# 7️⃣ Prediction
+st.subheader("4️⃣ MIDR Prediction")
+if st.button("Predict MIDR"):
+    if file_sa1 and file_sa2:
+        def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
+        ts1 = norm(data1)
+        ts2 = norm(data2)
+        TIME_STEPS = 9000
+        pad_len = 9000 - min(len(ts1), len(ts2))
+        ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
+        ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
+        ts_data = np.stack((ts1, ts2), axis=1)
+        step = int(120 * (1 - 0.5))
+        stacked_input = [torch.tensor(ts_data[i:i+120], dtype=torch.float32)
+                         for i in range(0, TIME_STEPS - 120 + 1, step)]
+        x_ts = torch.stack(stacked_input).unsqueeze(0)
+        static_inputs = []
+        for col in input_cols:
+            val = user_inputs.get(col, feature_means.get(col, 0.0))
+            std = feature_stds.get(col, 1.0)
+            mean = feature_means.get(col, 0.0)
+            static_inputs.append((val - mean) / std)
+        x_static = torch.tensor([static_inputs], dtype=torch.float32)
+        with torch.no_grad():
+            midr = model(x_ts, x_static).cpu().item()
+        st.success(f"Predicted MIDR: {midr:.6f}")
+    else:
+        st.warning("Upload both Sa1 & Sa2 and enter dt.")
