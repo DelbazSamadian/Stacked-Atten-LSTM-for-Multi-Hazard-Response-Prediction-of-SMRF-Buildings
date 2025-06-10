@@ -115,27 +115,36 @@ model.eval()
 # 5️⃣ Time Histories + Uploads
 dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
 
+# Sa1 Component
 st.subheader("1️⃣ Sa1 Component")
-col1_left, col1_right = st.columns([1, 2])
+col1_left, col1_right = st.columns([1, 1])  # Evenly split the space
+
 with col1_left:
     file_sa1 = st.file_uploader("Upload Sa1 (.txt)", type="txt")
+    # Optionally, add a placeholder text or description here.
+
 with col1_right:
     if file_sa1:
         try:
             data1 = np.loadtxt(file_sa1).flatten(order='C')
             time1 = np.arange(0, len(data1) * dt, dt)
-            fig1, ax1 = plt.subplots(figsize=(2, 1))
-            ax1.plot(time1, data1)
-            ax1.set_xlabel("Time (sec)")
-            ax1.set_ylabel("Sa (g)")
-            ax1.set_title("Sa1 Time History")
-            plt.tight_layout() 
-            st.pyplot(fig1, bbox_inches='tight', use_container_width=True)
+            fig1, ax1 = plt.subplots(figsize=(4, 2))
+            ax1.plot(time1, data1, color='blue', linewidth=1)
+            ax1.set_xlabel("Time (sec)", fontsize=8)
+            ax1.set_ylabel("Sa (g)", fontsize=8)
+            ax1.set_title("Sa1 Time History", fontsize=10)
+            ax1.tick_params(labelsize=6)
+            plt.tight_layout()
+            st.pyplot(fig1)
         except Exception as e:
             st.error(f"Error reading Sa1: {e}")
+    else:
+        st.markdown("<div style='height:120px;'></div>", unsafe_allow_html=True)  # Add space to align
+
+
 
 st.subheader("2️⃣ Sa2 Component")
-col2_left, col2_right = st.columns([1, 2])
+col2_left, col2_right = st.columns([1, 1])
 with col2_left:
     file_sa2 = st.file_uploader("Upload Sa2 (.txt)", type="txt")
 with col2_right:
@@ -143,15 +152,19 @@ with col2_right:
         try:
             data2 = np.loadtxt(file_sa2).flatten(order='C')
             time2 = np.arange(0, len(data2) * dt, dt)
-            fig2, ax2 = plt.subplots(figsize=(2, 1))
-            ax2.plot(time2, data2)
-            ax2.set_xlabel("Time (sec)")
-            ax2.set_ylabel("Sa (g)")
-            ax2.set_title("Sa2 Time History")
+            fig2, ax2 = plt.subplots(figsize=(4, 2))
+            ax2.plot(time2, data2, color='blue', linewidth=1)
+            ax2.set_xlabel("Time (sec)", fontsize=8)
+            ax2.set_ylabel("Sa (g)", fontsize=8)
+            ax2.set_title("Sa2 Time History", fontsize=10)
+            ax2.tick_params(labelsize=6)
             plt.tight_layout()
-            st.pyplot(fig2, bbox_inches='tight', use_container_width=True)
+            st.pyplot(fig2)
         except Exception as e:
             st.error(f"Error reading Sa2: {e}")
+    else:
+        st.markdown("<div style='height:120px;'></div>", unsafe_allow_html=True)
+
 
 # 6️⃣ Top 10 Features
 st.subheader("3️⃣ Enter Top 10 Most Important Features")
