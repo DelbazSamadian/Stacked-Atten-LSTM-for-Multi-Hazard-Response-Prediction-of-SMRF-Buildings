@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 # 0️⃣ Custom CSS
 st.markdown("""
     <style>
+    body, .stApp, .block-container, .stTextInput, .stNumberInput, .stFileUploader, .stButton {
+        font-family: 'Times New Roman', Times, serif;
+    }
     .stApp {
         background-color: #f0f2f6;
     }
@@ -15,29 +18,39 @@ st.markdown("""
         padding-bottom: 5px;
     }
     .stFileUploader {
-        padding: 2px !important;
-        margin-bottom: 4px !important;
-        height: 40px !important;
+        padding: 6px !important;
+        margin-bottom: 6px !important;
     }
-    .uploadedFile {
-        margin-bottom: 4px !important;
+    .stFileUploader > div {
+        border: 2px solid #888 !important;
+        background-color: #ddd !important;
+    }
+    .stTextInput > div > input, .stNumberInput > div > input {
+        background-color: #ddd !important;
+        border-radius: 5px;
+        padding: 6px;
+    }
+    .stButton > button {
+        background-color: #444 !important;
+        color: white !important;
+        border-radius: 5px;
     }
     .stImage > img {
-        max-width: 100%;
+        max-width: 80px;
         height: auto;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # 1️⃣ App Header
-st.image("OIP.jpeg", width=150, use_column_width=False)
+st.image("OIP.jpeg", use_column_width=False)
 st.markdown("""
 # MIDR Prediction App  
 Developed by **Teesside University**  
 **Developers:** Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood
 """)
 
-# 2️⃣ Load Means and Stds (same)
+# 2️⃣ Load Means and Stds
 raw_data_path = "filtered_refinedDoE1.xlsx"
 df_raw = pd.read_excel(raw_data_path)
 non_input_cols = ["iModel", "iRP", "irecord", "MDR", "MFA", "MBS"]
@@ -45,7 +58,7 @@ input_cols = [col for col in df_raw.columns if col not in non_input_cols]
 feature_means = df_raw[input_cols].mean().to_dict()
 feature_stds = df_raw[input_cols].std().replace(0, 1e-6).to_dict()
 
-# 3️⃣ Model Definitions (same)
+# 3️⃣ Model Definitions
 class Attention(torch.nn.Module):
     def __init__(self, hidden_size, static_input_size):
         super(Attention, self).__init__()
@@ -85,7 +98,7 @@ class AttLSTM(torch.nn.Module):
         final_output = self.fc_dropout(final_output)
         return self.fc2(final_output).squeeze(-1)
 
-# 4️⃣ Load model (same)
+# 4️⃣ Load model
 device = torch.device("cpu")
 model = AttLSTM(input_size=2, static_input_size=49)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
