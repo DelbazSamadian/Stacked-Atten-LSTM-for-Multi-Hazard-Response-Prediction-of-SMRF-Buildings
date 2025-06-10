@@ -3,5 +3,6 @@ torch
 numpy
 pandas
 openpyxl
+matplotlib
 # ...add any other dependencies your app needs here
 
