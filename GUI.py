@@ -4,15 +4,32 @@ import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 
-# 1️⃣ App Header
-st.image("OIP.jpeg", width=150)
+# 0️⃣ Custom CSS for spacing and background
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f9f9f9;
+    }
+    .block-container {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    h1, h2, h3, h4 {
+        margin-top: 0.2em;
+        margin-bottom: 0.2em;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# 1️⃣ App Header (reduce whitespace)
+st.image("OIP.jpeg", width=100)
 st.markdown("""
 # MIDR Prediction App  
 Developed by **Teesside University**  
 **Developers:** Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood
 """)
 
-# 2️⃣ Load Means and Stds from the raw dataset
+# 2️⃣ Load Means and Stds
 raw_data_path = "filtered_refinedDoE1.xlsx"
 df_raw = pd.read_excel(raw_data_path)
 non_input_cols = ["iModel", "iRP", "irecord", "MDR", "MFA", "MBS"]
@@ -20,14 +37,13 @@ input_cols = [col for col in df_raw.columns if col not in non_input_cols]
 feature_means = df_raw[input_cols].mean().to_dict()
 feature_stds = df_raw[input_cols].std().replace(0, 1e-6).to_dict()
 
-# 3️⃣ Model Definitions
+# 3️⃣ Model Definitions (unchanged)
 class Attention(torch.nn.Module):
     def __init__(self, hidden_size, static_input_size):
         super(Attention, self).__init__()
         self.Wq = torch.nn.Linear(hidden_size, hidden_size)
         self.Wk = torch.nn.Linear(hidden_size, hidden_size)
         self.static_fc = torch.nn.Linear(static_input_size, hidden_size)
-
     def forward(self, hidden_states, static_inputs):
         Q = torch.tanh(self.Wq(hidden_states[:, -1, :]))
         K = torch.tanh(self.Wk(hidden_states))
@@ -49,7 +65,6 @@ class AttLSTM(torch.nn.Module):
         self.fc_dropout = torch.nn.Dropout(fc_dropout_rate)
         self.fc2 = torch.nn.Linear(64, 1)
         self.relu = torch.nn.ReLU()
-
     def forward(self, x, static_input):
         if x.dim() == 4:
             batch_size, num_stacks, stack_len, input_size = x.size()
@@ -64,112 +79,93 @@ class AttLSTM(torch.nn.Module):
 
 # 4️⃣ Load the trained model
 device = torch.device("cpu")
-static_input_size = 49
-model = AttLSTM(input_size=2, static_input_size=static_input_size)
+model = AttLSTM(input_size=2, static_input_size=49)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
 # 5️⃣ Three-Column Layout
-col1, col2, col3 = st.columns([1.2, 1.5, 1.2])  # Adjust weights for balance
+col1, col2, col3 = st.columns([1.2, 1.5, 1.2])
 
-# Left Column: Sa Upload and Plot
+# Left Column: Sa
 with col1:
-    st.subheader("Sa Input and Time History")
-    file_sa1 = st.file_uploader("Upload Sa1 Component (.txt)", type="txt")
-    file_sa2 = st.file_uploader("Upload Sa2 Component (.txt)", type="txt")
-    dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001, format="%.3f")
-
-    def process_time_history(file, dt):
+    st.subheader("Sa Input")
+    file_sa1 = st.file_uploader("Upload Sa1 (.txt)", type="txt")
+    file_sa2 = st.file_uploader("Upload Sa2 (.txt)", type="txt")
+    dt = st.number_input("dt (sec)", value=0.005, step=0.001)
+    def process_time(file, dt):
         try:
             data = np.loadtxt(file)
-            if data.ndim == 1:
-                data_flat = data
-            else:
-                data_flat = data.flatten(order='C')
+            data_flat = data.flatten(order='C')
             time = np.arange(0, len(data_flat) * dt, dt)
             return time, data_flat
         except Exception as e:
-            st.error(f"Error processing file: {e}")
+            st.error(f"Error reading file: {e}")
             return None, None
-
-    def plot_time_history(time, sa_array, title):
+    def plot_history(time, data, label):
         fig, ax = plt.subplots(figsize=(5, 3))
-        ax.plot(time, sa_array)
+        ax.plot(time, data)
         ax.set_xlabel("Time (sec)")
         ax.set_ylabel("Sa (g)")
-        ax.set_title(title)
+        ax.set_title(label)
         st.pyplot(fig)
+    time1, time2 = None, None
+    if file_sa1:
+        time1, data1 = process_time(file_sa1, dt)
+        if time1 is not None: plot_history(time1, data1, "Sa1 Time History")
+    if file_sa2:
+        time2, data2 = process_time(file_sa2, dt)
+        if time2 is not None: plot_history(time2, data2, "Sa2 Time History")
 
-    time_series_data1 = None
-    time_series_data2 = None
-
-    if file_sa1 is not None:
-        time1, time_series_data1 = process_time_history(file_sa1, dt)
-        if time1 is not None:
-            plot_time_history(time1, time_series_data1, "Sa1 Time History")
-
-    if file_sa2 is not None:
-        time2, time_series_data2 = process_time_history(file_sa2, dt)
-        if time2 is not None:
-            plot_time_history(time2, time_series_data2, "Sa2 Time History")
-
-# Middle Column: Top 10 Feature Inputs
+# Middle Column: Top Features
 with col2:
     st.subheader("Top 10 Features")
     top_features = {
         'T1': 'Fundamental Period',
         'FH': 'Flood Height',
-        'ϴp_Beam1': 'Pre-capping rotation at Beam 1',
-        'Ibeam1': 'Moment of Inertia at Beam 1',
-        'M1': 'First mode mass participation ratio',
-        'ϴpc_Col_Ex1': 'Post-capping rotation at Exterior Column 1',
-        'ϴp_Col_Ex1': 'Pre-capping rotation at Exterior Column 1',
-        'Abeam1': 'Area of Beam 1',
-        'ϴpc_Col_In1': 'Post-capping rotation at Interior Column 1',
+        'ϴp_Beam1': 'Pre-capping rot at Beam 1',
+        'Ibeam1': 'Moment of Inertia Beam 1',
+        'M1': 'First Mode Mass Part.',
+        'ϴpc_Col_Ex1': 'Post-cap rot Ext Col 1',
+        'ϴp_Col_Ex1': 'Pre-cap rot Ext Col 1',
+        'Abeam1': 'Area Beam 1',
+        'ϴpc_Col_In1': 'Post-cap rot Int Col 1',
         'someFeature10': 'Additional Feature 10'
     }
-
     user_inputs = {}
-    for feature, description in top_features.items():
-        default_val = float(feature_means.get(feature, 0.0))
-        user_inputs[feature] = st.number_input(f"{feature} ({description}):", value=default_val)
+    feature_keys = list(top_features.keys())
+    for i in range(0, len(feature_keys), 2):
+        row = st.columns(2)
+        for j in range(2):
+            if i + j < len(feature_keys):
+                key = feature_keys[i + j]
+                desc = top_features[key]
+                default_val = feature_means.get(key, 0.0)
+                user_inputs[key] = row[j].number_input(f"{key} ({desc}):", value=default_val)
 
 # Right Column: MIDR Prediction
 with col3:
     st.subheader("MIDR Prediction")
     if st.button("Predict MIDR"):
-        if time_series_data1 is not None and time_series_data2 is not None:
-            def normalize(ts):
-                return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
-            ts1 = normalize(time_series_data1)
-            ts2 = normalize(time_series_data2)
-
-            TIME_STEPS = 9000
-            pad_len = TIME_STEPS - min(len(ts1), len(ts2))
-            ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
-            ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
+        if time1 is not None and time2 is not None:
+            def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
+            ts1, ts2 = norm(data1), norm(data2)
+            TIME_STEPS, pad = 9000, 9000 - min(len(ts1), len(ts2))
+            ts1 = np.concatenate([ts1, np.full(pad, ts1.mean())]) if pad > 0 else ts1[:TIME_STEPS]
+            ts2 = np.concatenate([ts2, np.full(pad, ts2.mean())]) if pad > 0 else ts2[:TIME_STEPS]
             ts_data = np.stack((ts1, ts2), axis=1)
-
-            STACK_SIZE = 120
-            OVERLAP = 0.5
-            step = int(STACK_SIZE * (1 - OVERLAP))
-            stacked_input = []
-            for i in range(0, TIME_STEPS - STACK_SIZE + 1, step):
-                window = ts_data[i:i + STACK_SIZE]
-                stacked_input.append(torch.tensor(window, dtype=torch.float32))
-            x_time_series = torch.stack(stacked_input).unsqueeze(0).to(device)
-
+            step, stack = int(120 * (1 - 0.5)), []
+            for i in range(0, TIME_STEPS - 120 + 1, step):
+                stack.append(torch.tensor(ts_data[i:i+120], dtype=torch.float32))
+            x_ts = torch.stack(stack).unsqueeze(0)
             static_inputs = []
             for col in input_cols:
-                raw_value = user_inputs[col] if col in user_inputs else feature_means.get(col, 0.0)
-                mean = feature_means.get(col, 0.0)
+                val = user_inputs.get(col, feature_means.get(col, 0.0))
                 std = feature_stds.get(col, 1.0)
-                standardized_value = (raw_value - mean) / std
-                static_inputs.append(standardized_value)
-            static_tensor = torch.tensor([static_inputs], dtype=torch.float32).to(device)
-
+                mean = feature_means.get(col, 0.0)
+                static_inputs.append((val - mean) / std)
+            x_static = torch.tensor([static_inputs], dtype=torch.float32)
             with torch.no_grad():
-                midr = model(x_time_series, static_tensor).cpu().item()
+                midr = model(x_ts, x_static).cpu().item()
             st.success(f"Predicted MIDR: {midr:.6f}")
         else:
-            st.warning("Please upload both Sa1 and Sa2 files and enter dt before predicting.")
+            st.warning("Upload both Sa1 & Sa2 and enter dt before prediction.")
