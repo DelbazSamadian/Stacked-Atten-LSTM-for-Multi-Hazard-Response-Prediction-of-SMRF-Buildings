@@ -44,7 +44,7 @@ st.markdown("""
 # 1️⃣ App Header
 st.markdown("""
 <div style="display: flex; align-items: center; margin-top: 20px;">
-    <img src="logo.png" alt="Teesside University Logo" width="60" style="margin-right: 15px;">
+    <img src="https://github.com/DelbazSamadian/Stacked-Atten-LSTM-for-Multi-Hazard-Response-Prediction-of-SMRF-Buildings/blob/main/OIP.jpeg?raw=true" alt="Teesside University Logo" width="60" style="margin-right: 15px;">
     <div>
         <h1 style="margin-bottom: 0;">MIDR Prediction App</h1>
         <p style="margin-top: 0;">Developed by <strong>Teesside University</strong></p>
