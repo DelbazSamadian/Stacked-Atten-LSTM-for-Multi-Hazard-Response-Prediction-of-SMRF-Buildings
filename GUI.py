@@ -5,7 +5,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # 1️⃣ App Header
-st.image(r"C:\Users\User\Downloads\OIP.jpeg", width=150)
+st.image("OIP.jpeg", width=150)
 st.markdown("""
 # MIDR Prediction App  
 Developed by **Teesside University**  
