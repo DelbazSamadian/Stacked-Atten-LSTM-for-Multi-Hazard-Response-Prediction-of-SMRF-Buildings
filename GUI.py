@@ -43,12 +43,16 @@ st.markdown("""
 
 # 1️⃣ App Header
 st.markdown("""
-<div style="margin-top:20px;">
-<h1>MIDR Prediction App</h1>
-<p>Developed by <strong>Teesside University</strong></p>
-<p><strong>Developers:</strong> Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood</p>
+<div style="display: flex; align-items: center; margin-top: 20px;">
+    <img src="logo.png" alt="Teesside University Logo" width="60" style="margin-right: 15px;">
+    <div>
+        <h1 style="margin-bottom: 0;">MIDR Prediction App</h1>
+        <p style="margin-top: 0;">Developed by <strong>Teesside University</strong></p>
+        <p style="margin-top: 0;"><strong>Developers:</strong> Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # 2️⃣ Load Means and Stds
