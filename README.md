@@ -31,27 +31,22 @@ Open-source, free to use and customize.
 
 Follow these steps to run the app on your own machine:
 
-   ## 1. Clone the Repository
-
-```bash
+### 1️⃣ Clone the Repository
 git clone https://github.com/DelbazSamadian/Stacked-Atten-LSTM-for-Multi-Hazard-Response-Prediction-of-SMRF-Buildings.git
 cd Stacked-Atten-LSTM-for-Multi-Hazard-Response-Prediction-of-SMRF-Buildings
-  
 
-  ## 2. (Optional but Recommended) Create a Virtual Environment
-# Windows:
+### 2️⃣ (Optional but Recommended) Create a Virtual Environment
+Windows:
 python -m venv venv
 venv\Scripts\activate
 
-# macOS/Linux:
+macOS/Linux:
 python3 -m venv venv
 source venv/bin/activate
 
-  ## 3. Install Dependencies
+### 3️⃣ Install Dependencies
 Make sure you have Python 3.8+ installed, then:
 pip install -r requirements.txt
 
-  ## 4. Run the App
+### 4️⃣ Run the App
 streamlit run GUI.py
-
-
