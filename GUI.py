@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import torch
+import matplotlib.pyplot as plt
 
 # 1️⃣ Load means and stds from the raw dataset
 raw_data_path = "filtered_refinedDoE1.xlsx"
@@ -62,9 +63,23 @@ model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
 # 4️⃣ Streamlit App
-st.title("MIDR Prediction App")
+st.set_page_config(page_title="MIDR Prediction App", layout="wide")
 
-st.header("1️⃣ Upload Ground Motion Time Histories")
+# Teesside University Branding
+col1, col2 = st.columns([1, 5])
+with col1:
+    st.image("path/to/tees_logo.png", width=150)  # Replace with correct path
+with col2:
+    st.markdown("""
+    # MIDR Prediction App  
+    **Developed by Teesside University**  
+    **Developers**: Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood
+    """)
+
+st.markdown("---")
+
+# 5️⃣ Upload Section
+st.header("📂 Upload Ground Motion Time Histories")
 file_sa1 = st.file_uploader("Upload Sa1 Component (.txt)", type="txt")
 file_sa2 = st.file_uploader("Upload Sa2 Component (.txt)", type="txt")
 
@@ -74,48 +89,78 @@ time_series_data2 = None
 if file_sa1 is not None:
     try:
         time_series_data1 = np.loadtxt(file_sa1)
-        st.success("Sa1 loaded successfully!")
+        st.success("✅ Sa1 loaded successfully!")
+        fig, ax = plt.subplots()
+        time_axis = np.arange(len(time_series_data1))
+        ax.plot(time_axis, time_series_data1)
+        ax.set_xlabel("Time (sec)")
+        ax.set_ylabel("Sa (g)")
+        ax.set_title("Sa1 Time History")
+        st.pyplot(fig)
     except Exception as e:
         st.error(f"Error reading Sa1 file: {e}")
 
 if file_sa2 is not None:
     try:
         time_series_data2 = np.loadtxt(file_sa2)
-        st.success("Sa2 loaded successfully!")
+        st.success("✅ Sa2 loaded successfully!")
+        fig, ax = plt.subplots()
+        time_axis = np.arange(len(time_series_data2))
+        ax.plot(time_axis, time_series_data2)
+        ax.set_xlabel("Time (sec)")
+        ax.set_ylabel("Sa (g)")
+        ax.set_title("Sa2 Time History")
+        st.pyplot(fig)
     except Exception as e:
         st.error(f"Error reading Sa2 file: {e}")
 
-# 5️⃣ Ask user only for top 10 features
+st.markdown("---")
+
+# 6️⃣ Feature Input Section
 top_features = ['T1', 'FH', 'ϴp_Beam1', 'Ibeam1', 'M1', 'ϴpc_Col_Ex1', 'ϴp_Col_Ex1', 'Abeam1', 'ϴpc_Col_In1', 'someFeature10']
-st.header("2️⃣ Enter Top 10 Most Important Features (Raw Values)")
+
+st.header("📝 Enter Top 10 Most Important Features (Raw Values)")
+
+with st.expander("ℹ️ Feature Descriptions"):
+    st.markdown("""
+    - **T1**: Fundamental period (sec)
+    - **FH**: Flood height (m)
+    - **ϴp_Beam1**: Plastic rotation of the first beam (rad)
+    - **Ibeam1**: Moment of inertia of the first beam (cm⁴)
+    - **M1**: Mass of the first floor (tons)
+    - **ϴpc_Col_Ex1**: Plastic rotation capacity of exterior column (rad)
+    - **ϴp_Col_Ex1**: Plastic rotation of exterior column (rad)
+    - **Abeam1**: Cross-sectional area of the first beam (cm²)
+    - **ϴpc_Col_In1**: Plastic rotation capacity of interior column (rad)
+    - **someFeature10**: Placeholder feature (customizable)
+    """)
 
 user_inputs = {}
-for feature in top_features:
-    default_val = float(feature_means.get(feature, 0.0))
-    value = st.number_input(f"{feature}:", value=default_val)
-    user_inputs[feature] = value
+cols = st.columns(5)
+for i, feature in enumerate(top_features):
+    with cols[i % 5]:
+        default_val = float(feature_means.get(feature, 0.0))
+        value = st.number_input(f"{feature}:", value=default_val)
+        user_inputs[feature] = value
 
-# 6️⃣ Predict button
-if st.button("Predict MIDR"):
+st.markdown("---")
+
+# 7️⃣ Prediction Section
+if st.button("🚀 Predict MIDR"):
     if time_series_data1 is not None and time_series_data2 is not None:
-        ts1 = time_series_data1.flatten()  # ensures 1D
-        ts2 = time_series_data2.flatten()  # ensures 1D
-    
-        # Normalize time series
+        ts1 = time_series_data1.flatten()
+        ts2 = time_series_data2.flatten()
+
         def normalize(ts):
             return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
-    
+
         ts1 = normalize(ts1)
         ts2 = normalize(ts2)
-    
+
         TIME_STEPS = 9000
         pad_len = TIME_STEPS - min(len(ts1), len(ts2))
         ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
         ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
-
-        ts_data = np.stack((ts1, ts2), axis=1)
-
-
 
         ts_data = np.stack((ts1, ts2), axis=1)
 
@@ -128,7 +173,6 @@ if st.button("Predict MIDR"):
             stacked_input.append(torch.tensor(window, dtype=torch.float32))
         x_time_series = torch.stack(stacked_input).unsqueeze(0).to(device)
 
-        # Fill all 49 features: user inputs for top 10, means for others; all standardized
         static_inputs = []
         for col in input_cols:
             if col in user_inputs:
@@ -144,6 +188,8 @@ if st.button("Predict MIDR"):
 
         with torch.no_grad():
             midr = model(x_time_series, static_tensor).cpu().item()
-        st.success(f"Predicted MIDR: {midr:.6f}")
+        st.success(f"🎯 **Predicted MIDR:** {midr:.6f}")
     else:
-        st.warning("Please upload both Sa1 and Sa2 files before predicting.")
+        st.warning("⚠️ Please upload both Sa1 and Sa2 files before predicting.")
+
+# --- END OF APP ---
