@@ -1,6 +1,6 @@
 # Stacked-Atten-LSTM-for-Multi-Hazard-Response-Prediction-of-SMRF-Buildings
 
-This project implements a stacked attention-based LSTM model to predict Maximum Interstory Drift Ratio (MIDR) for SMRF buildings subjected to earthquakes. It uses ground motion time histories and key structural features.
+This project implements a stacked attention-based LSTM model to predict Maximum Interstory Drift Ratio (MIDR) for SMRF buildings subjected to sequential earthquakes and floods. It uses ground motion time histories, flood height, and key structural features.
 
 ## Features
 
