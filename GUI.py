@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun 10 11:31:08 2025
+
+@author: Delbaz Samadian
+Email: d.samadian@tees.ac.uk
+"""
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -69,67 +77,75 @@ model = AttLSTM(input_size=2, static_input_size=static_input_size)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
-# 5️⃣ Streamlit App Body
-st.header("1️⃣ Upload Ground Motion Time Histories")
-file_sa1 = st.file_uploader("Upload Sa1 Component (.txt)", type="txt")
-file_sa2 = st.file_uploader("Upload Sa2 Component (.txt)", type="txt")
-dt = st.number_input("Enter Time Step (dt in sec)", value=0.005, step=0.001, format="%.3f")
+# 5️⃣ Layout: Sa Time History on Left, Features on Right
+col1, col2 = st.columns([1, 1])
 
-def process_time_history(file, dt):
-    try:
-        data = np.loadtxt(file)
-        if data.ndim == 1:
-            data_flat = data
-        else:
-            data_flat = data.flatten(order='C')  # row-wise flattening
-        time = np.arange(0, len(data_flat) * dt, dt)
-        return time, data_flat
-    except Exception as e:
-        st.error(f"Error processing file: {e}")
-        return None, None
+# Left Column: Sa Files and Plot
+with col1:
+    st.header("1️⃣ Upload Ground Motion Time Histories")
+    file_sa1 = st.file_uploader("Upload Sa1 Component (.txt)", type="txt")
+    file_sa2 = st.file_uploader("Upload Sa2 Component (.txt)", type="txt")
+    dt = st.number_input("Enter Time Step (dt in sec)", value=0.005, step=0.001, format="%.3f")
 
-def plot_time_history(time, sa_array, title):
-    fig, ax = plt.subplots()
-    ax.plot(time, sa_array)
-    ax.set_xlabel("Time (sec)")
-    ax.set_ylabel("Sa (g)")
-    ax.set_title(title)
-    st.pyplot(fig)
+    def process_time_history(file, dt):
+        try:
+            data = np.loadtxt(file)
+            if data.ndim == 1:
+                data_flat = data
+            else:
+                data_flat = data.flatten(order='C')
+            time = np.arange(0, len(data_flat) * dt, dt)
+            return time, data_flat
+        except Exception as e:
+            st.error(f"Error processing file: {e}")
+            return None, None
 
-time_series_data1 = None
-time_series_data2 = None
+    def plot_time_history(time, sa_array, title):
+        fig, ax = plt.subplots()
+        ax.plot(time, sa_array)
+        ax.set_xlabel("Time (sec)")
+        ax.set_ylabel("Sa (g)")
+        ax.set_title(title)
+        st.pyplot(fig)
 
-if file_sa1 is not None:
-    time1, time_series_data1 = process_time_history(file_sa1, dt)
-    if time1 is not None:
-        plot_time_history(time1, time_series_data1, "Sa1 Time History")
+    time_series_data1 = None
+    time_series_data2 = None
 
-if file_sa2 is not None:
-    time2, time_series_data2 = process_time_history(file_sa2, dt)
-    if time2 is not None:
-        plot_time_history(time2, time_series_data2, "Sa2 Time History")
+    if file_sa1 is not None:
+        time1, time_series_data1 = process_time_history(file_sa1, dt)
+        if time1 is not None:
+            plot_time_history(time1, time_series_data1, "Sa1 Time History")
 
-# 6️⃣ Ask user for Top 10 features (with explanations)
-top_features = {
-    'T1': 'Fundamental Period',
-    'FH': 'Flood Height',
-    'ϴp_Beam1': 'Plastic Rotation at Beam 1',
-    'Ibeam1': 'Moment of Inertia at Beam 1',
-    'M1': 'Mass at Floor 1',
-    'ϴpc_Col_Ex1': 'Plastic Hinge Rotation at Exterior Column 1',
-    'ϴp_Col_Ex1': 'Plastic Rotation at Exterior Column 1',
-    'Abeam1': 'Area of Beam 1',
-    'ϴpc_Col_In1': 'Plastic Hinge Rotation at Interior Column 1',
-    'someFeature10': 'Additional Feature 10'
-}
+    if file_sa2 is not None:
+        time2, time_series_data2 = process_time_history(file_sa2, dt)
+        if time2 is not None:
+            plot_time_history(time2, time_series_data2, "Sa2 Time History")
 
-st.header("2️⃣ Enter Top 10 Most Important Features (Raw Values)")
-user_inputs = {}
-for feature, description in top_features.items():
-    default_val = float(feature_means.get(feature, 0.0))
-    user_inputs[feature] = st.number_input(f"{feature} ({description}):", value=default_val)
+# Right Column: Feature Inputs
+with col2:
+    st.header("2️⃣ Enter Top 10 Most Important Features")
+    top_features = {
+        'T1': 'Fundamental Period',
+        'FH': 'Flood Height',
+        'ϴp_Beam1': 'Pre-capping rotation at Beam 1',
+        'Ibeam1': 'Moment of Inertia at Beam 1',
+        'M1': 'First mode mass participation ratio',
+        'ϴpc_Col_Ex1': 'Post-capping rotation at Exterior Column 1',
+        'ϴp_Col_Ex1': 'Pre-capping rotation at Exterior Column 1',
+        'Abeam1': 'Area of Beam 1',
+        'ϴpc_Col_In1': 'Post-capping rotation at Interior Column 1',
+        'someFeature10': 'Additional Feature 10'
+    }
 
-# 7️⃣ Predict MIDR
+    user_inputs = {}
+    for feature, description in top_features.items():
+        default_val = float(feature_means.get(feature, 0.0))
+        user_inputs[feature] = st.number_input(f"{feature} ({description}):", value=default_val)
+
+# 6️⃣ Prediction Section at Bottom
+st.markdown("---")
+st.header("3️⃣ Predict MIDR")
+
 if st.button("Predict MIDR"):
     if time_series_data1 is not None and time_series_data2 is not None:
         def normalize(ts):
