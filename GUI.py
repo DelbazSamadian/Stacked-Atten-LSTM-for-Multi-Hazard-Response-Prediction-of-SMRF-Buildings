@@ -17,16 +17,13 @@ st.markdown("""
         padding-top: 5px;
         padding-bottom: 5px;
     }
-    img {
-        max-height: 80px;
-    }
     .stFileUploader {
-        padding: 8px !important;
         background-color: #ddd !important;
         border-radius: 5px !important;
         border: 1px solid #888 !important;
+        padding: 8px !important;
     }
-    .stNumberInput input, .stTextInput input {
+    .stNumberInput input {
         background-color: #ddd !important;
         border-radius: 5px !important;
         padding: 6px !important;
@@ -38,20 +35,13 @@ st.markdown("""
         border-radius: 5px !important;
         font-family: 'Times New Roman', Times, serif;
     }
-    .stMarkdown {
-        font-family: 'Times New Roman', Times, serif;
-    }
-    .stSuccess, .stWarning {
-        font-family: 'Times New Roman', Times, serif;
-    }
-    .stHeading {
+    .stMarkdown, .stSubheader, .stHeading, .stSuccess, .stWarning {
         font-family: 'Times New Roman', Times, serif;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # 1️⃣ App Header
-st.image("OIP.jpeg", use_column_width=True)
 st.markdown("""
 # MIDR Prediction App  
 Developed by **Teesside University**  
@@ -112,90 +102,95 @@ model = AttLSTM(input_size=2, static_input_size=49)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
-# 5️⃣ Three-Column Layout
-col1, col2, col3 = st.columns([1.2, 1.5, 1.2])
+# 5️⃣ Time Histories + Uploads
+dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
 
-# Sa Uploads & Plots
-with col1:
-    st.subheader("Sa Input")
-    file_sa1 = st.file_uploader("Sa1 (.txt)", type="txt")
-    file_sa2 = st.file_uploader("Sa2 (.txt)", type="txt")
-    dt = st.number_input("dt (sec)", value=0.005, step=0.001)
-    def process_time(file, dt):
-        try:
-            data = np.loadtxt(file)
-            data_flat = data.flatten(order='C')
-            time = np.arange(0, len(data_flat) * dt, dt)
-            return time, data_flat
-        except Exception as e:
-            st.error(f"Error reading file: {e}")
-            return None, None
-    def plot_history(time, data, label):
-        fig, ax = plt.subplots(figsize=(5, 2.5))
-        ax.plot(time, data)
-        ax.set_xlabel("Time (sec)")
-        ax.set_ylabel("Sa (g)")
-        ax.set_title(label)
-        st.pyplot(fig)
-    time1, time2 = None, None
+st.subheader("1️⃣ Sa1 Component")
+col1_left, col1_right = st.columns([1, 2])
+with col1_left:
+    file_sa1 = st.file_uploader("Upload Sa1 (.txt)", type="txt")
+with col1_right:
     if file_sa1:
-        time1, data1 = process_time(file_sa1, dt)
-        if time1 is not None: plot_history(time1, data1, "Sa1 Time History")
+        try:
+            data1 = np.loadtxt(file_sa1).flatten(order='C')
+            time1 = np.arange(0, len(data1) * dt, dt)
+            fig1, ax1 = plt.subplots(figsize=(5, 2.5))
+            ax1.plot(time1, data1)
+            ax1.set_xlabel("Time (sec)")
+            ax1.set_ylabel("Sa (g)")
+            ax1.set_title("Sa1 Time History")
+            st.pyplot(fig1)
+        except Exception as e:
+            st.error(f"Error reading Sa1: {e}")
+
+st.subheader("2️⃣ Sa2 Component")
+col2_left, col2_right = st.columns([1, 2])
+with col2_left:
+    file_sa2 = st.file_uploader("Upload Sa2 (.txt)", type="txt")
+with col2_right:
     if file_sa2:
-        time2, data2 = process_time(file_sa2, dt)
-        if time2 is not None: plot_history(time2, data2, "Sa2 Time History")
+        try:
+            data2 = np.loadtxt(file_sa2).flatten(order='C')
+            time2 = np.arange(0, len(data2) * dt, dt)
+            fig2, ax2 = plt.subplots(figsize=(5, 2.5))
+            ax2.plot(time2, data2)
+            ax2.set_xlabel("Time (sec)")
+            ax2.set_ylabel("Sa (g)")
+            ax2.set_title("Sa2 Time History")
+            st.pyplot(fig2)
+        except Exception as e:
+            st.error(f"Error reading Sa2: {e}")
 
-# Features
-with col2:
-    st.subheader("Top 10 Features")
-    top_features = {
-        'T1': 'Fundamental Period',
-        'FH': 'Flood Height',
-        'ϴp_Beam1': 'Pre-cap rot at Beam 1',
-        'Ibeam1': 'Moment of Inertia Beam 1',
-        'M1': 'First Mode Mass Part.',
-        'ϴpc_Col_Ex1': 'Post-cap rot Ext Col 1',
-        'ϴp_Col_Ex1': 'Pre-cap rot Ext Col 1',
-        'Abeam1': 'Area Beam 1',
-        'ϴpc_Col_In1': 'Post-cap rot Int Col 1',
-        'someFeature10': 'Additional Feature 10'
-    }
-    user_inputs = {}
-    keys = list(top_features.keys())
-    for i in range(0, len(keys), 2):
-        row = st.columns(2)
-        for j in range(2):
-            if i + j < len(keys):
-                key = keys[i + j]
-                desc = top_features[key]
-                default_val = feature_means.get(key, 0.0)
-                user_inputs[key] = row[j].number_input(f"{key} ({desc}):", value=default_val)
+# 6️⃣ Top 10 Features
+st.subheader("3️⃣ Enter Top 10 Most Important Features")
+top_features = {
+    'T1': 'Fundamental Period',
+    'FH': 'Flood Height',
+    'ϴp_Beam1': 'Pre-cap rot at Beam 1',
+    'Ibeam1': 'Moment of Inertia Beam 1',
+    'M1': 'First Mode Mass Part.',
+    'ϴpc_Col_Ex1': 'Post-cap rot Ext Col 1',
+    'ϴp_Col_Ex1': 'Pre-cap rot Ext Col 1',
+    'Abeam1': 'Area Beam 1',
+    'ϴpc_Col_In1': 'Post-cap rot Int Col 1',
+    'someFeature10': 'Additional Feature 10'
+}
+user_inputs = {}
+keys = list(top_features.keys())
+for i in range(0, len(keys), 2):
+    row = st.columns(2)
+    for j in range(2):
+        if i + j < len(keys):
+            key = keys[i + j]
+            desc = top_features[key]
+            default_val = feature_means.get(key, 0.0)
+            user_inputs[key] = row[j].number_input(f"{key} ({desc}):", value=default_val)
 
-# Prediction
-with col3:
-    st.subheader("MIDR Prediction")
-    if st.button("Predict MIDR"):
-        if time1 is not None and time2 is not None:
-            def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
-            ts1, ts2 = norm(data1), norm(data2)
-            TIME_STEPS = 9000
-            pad_len = 9000 - min(len(ts1), len(ts2))
-            ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
-            ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
-            ts_data = np.stack((ts1, ts2), axis=1)
-            step = int(120 * (1 - 0.5))
-            stacked_input = [torch.tensor(ts_data[i:i+120], dtype=torch.float32)
-                             for i in range(0, TIME_STEPS - 120 + 1, step)]
-            x_ts = torch.stack(stacked_input).unsqueeze(0)
-            static_inputs = []
-            for col in input_cols:
-                val = user_inputs.get(col, feature_means.get(col, 0.0))
-                std = feature_stds.get(col, 1.0)
-                mean = feature_means.get(col, 0.0)
-                static_inputs.append((val - mean) / std)
-            x_static = torch.tensor([static_inputs], dtype=torch.float32)
-            with torch.no_grad():
-                midr = model(x_ts, x_static).cpu().item()
-            st.success(f"Predicted MIDR: {midr:.6f}")
-        else:
-            st.warning("Upload both Sa1 & Sa2 and enter dt.")
+# 7️⃣ Prediction
+st.subheader("4️⃣ MIDR Prediction")
+if st.button("Predict MIDR"):
+    if file_sa1 and file_sa2:
+        def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
+        ts1 = norm(data1)
+        ts2 = norm(data2)
+        TIME_STEPS = 9000
+        pad_len = 9000 - min(len(ts1), len(ts2))
+        ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
+        ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
+        ts_data = np.stack((ts1, ts2), axis=1)
+        step = int(120 * (1 - 0.5))
+        stacked_input = [torch.tensor(ts_data[i:i+120], dtype=torch.float32)
+                         for i in range(0, TIME_STEPS - 120 + 1, step)]
+        x_ts = torch.stack(stacked_input).unsqueeze(0)
+        static_inputs = []
+        for col in input_cols:
+            val = user_inputs.get(col, feature_means.get(col, 0.0))
+            std = feature_stds.get(col, 1.0)
+            mean = feature_means.get(col, 0.0)
+            static_inputs.append((val - mean) / std)
+        x_static = torch.tensor([static_inputs], dtype=torch.float32)
+        with torch.no_grad():
+            midr = model(x_ts, x_static).cpu().item()
+        st.success(f"Predicted MIDR: {midr:.6f}")
+    else:
+        st.warning("Upload both Sa1 & Sa2 and enter dt.")
