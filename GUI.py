@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 10 11:31:08 2025
-
-@author: Delbaz Samadian
-Email: d.samadian@tees.ac.uk
-"""
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -77,15 +69,15 @@ model = AttLSTM(input_size=2, static_input_size=static_input_size)
 model.load_state_dict(torch.load("best_model.pth", map_location=device))
 model.eval()
 
-# 5️⃣ Layout: Sa Time History on Left, Features on Right
-col1, col2 = st.columns([1, 1])
+# 5️⃣ Three-Column Layout
+col1, col2, col3 = st.columns([1.2, 1.5, 1.2])  # Adjust weights for balance
 
-# Left Column: Sa Files and Plot
+# Left Column: Sa Upload and Plot
 with col1:
-    st.header("1️⃣ Upload Ground Motion Time Histories")
+    st.subheader("Sa Input and Time History")
     file_sa1 = st.file_uploader("Upload Sa1 Component (.txt)", type="txt")
     file_sa2 = st.file_uploader("Upload Sa2 Component (.txt)", type="txt")
-    dt = st.number_input("Enter Time Step (dt in sec)", value=0.005, step=0.001, format="%.3f")
+    dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001, format="%.3f")
 
     def process_time_history(file, dt):
         try:
@@ -101,7 +93,7 @@ with col1:
             return None, None
 
     def plot_time_history(time, sa_array, title):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 3))
         ax.plot(time, sa_array)
         ax.set_xlabel("Time (sec)")
         ax.set_ylabel("Sa (g)")
@@ -121,9 +113,9 @@ with col1:
         if time2 is not None:
             plot_time_history(time2, time_series_data2, "Sa2 Time History")
 
-# Right Column: Feature Inputs
+# Middle Column: Top 10 Feature Inputs
 with col2:
-    st.header("2️⃣ Enter Top 10 Most Important Features")
+    st.subheader("Top 10 Features")
     top_features = {
         'T1': 'Fundamental Period',
         'FH': 'Flood Height',
@@ -142,43 +134,42 @@ with col2:
         default_val = float(feature_means.get(feature, 0.0))
         user_inputs[feature] = st.number_input(f"{feature} ({description}):", value=default_val)
 
-# 6️⃣ Prediction Section at Bottom
-st.markdown("---")
-st.header("3️⃣ Predict MIDR")
+# Right Column: MIDR Prediction
+with col3:
+    st.subheader("MIDR Prediction")
+    if st.button("Predict MIDR"):
+        if time_series_data1 is not None and time_series_data2 is not None:
+            def normalize(ts):
+                return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
+            ts1 = normalize(time_series_data1)
+            ts2 = normalize(time_series_data2)
 
-if st.button("Predict MIDR"):
-    if time_series_data1 is not None and time_series_data2 is not None:
-        def normalize(ts):
-            return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
-        ts1 = normalize(time_series_data1)
-        ts2 = normalize(time_series_data2)
+            TIME_STEPS = 9000
+            pad_len = TIME_STEPS - min(len(ts1), len(ts2))
+            ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
+            ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
+            ts_data = np.stack((ts1, ts2), axis=1)
 
-        TIME_STEPS = 9000
-        pad_len = TIME_STEPS - min(len(ts1), len(ts2))
-        ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
-        ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
-        ts_data = np.stack((ts1, ts2), axis=1)
+            STACK_SIZE = 120
+            OVERLAP = 0.5
+            step = int(STACK_SIZE * (1 - OVERLAP))
+            stacked_input = []
+            for i in range(0, TIME_STEPS - STACK_SIZE + 1, step):
+                window = ts_data[i:i + STACK_SIZE]
+                stacked_input.append(torch.tensor(window, dtype=torch.float32))
+            x_time_series = torch.stack(stacked_input).unsqueeze(0).to(device)
 
-        STACK_SIZE = 120
-        OVERLAP = 0.5
-        step = int(STACK_SIZE * (1 - OVERLAP))
-        stacked_input = []
-        for i in range(0, TIME_STEPS - STACK_SIZE + 1, step):
-            window = ts_data[i:i + STACK_SIZE]
-            stacked_input.append(torch.tensor(window, dtype=torch.float32))
-        x_time_series = torch.stack(stacked_input).unsqueeze(0).to(device)
+            static_inputs = []
+            for col in input_cols:
+                raw_value = user_inputs[col] if col in user_inputs else feature_means.get(col, 0.0)
+                mean = feature_means.get(col, 0.0)
+                std = feature_stds.get(col, 1.0)
+                standardized_value = (raw_value - mean) / std
+                static_inputs.append(standardized_value)
+            static_tensor = torch.tensor([static_inputs], dtype=torch.float32).to(device)
 
-        static_inputs = []
-        for col in input_cols:
-            raw_value = user_inputs[col] if col in user_inputs else feature_means.get(col, 0.0)
-            mean = feature_means.get(col, 0.0)
-            std = feature_stds.get(col, 1.0)
-            standardized_value = (raw_value - mean) / std
-            static_inputs.append(standardized_value)
-        static_tensor = torch.tensor([static_inputs], dtype=torch.float32).to(device)
-
-        with torch.no_grad():
-            midr = model(x_time_series, static_tensor).cpu().item()
-        st.success(f"Predicted MIDR: {midr:.6f}")
-    else:
-        st.warning("Please upload both Sa1 and Sa2 files and enter dt before predicting.")
+            with torch.no_grad():
+                midr = model(x_time_series, static_tensor).cpu().item()
+            st.success(f"Predicted MIDR: {midr:.6f}")
+        else:
+            st.warning("Please upload both Sa1 and Sa2 files and enter dt before predicting.")
