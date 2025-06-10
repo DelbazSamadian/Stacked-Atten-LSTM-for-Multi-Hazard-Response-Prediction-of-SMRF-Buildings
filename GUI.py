@@ -43,11 +43,13 @@ st.markdown("""
 
 # 1️⃣ App Header
 st.markdown("""
-<br>
-# MIDR Prediction App  
-Developed by **Teesside University**  
-**Developers:** Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood
+<div style="margin-top:20px;">
+<h1>MIDR Prediction App</h1>
+<p>Developed by <strong>Teesside University</strong></p>
+<p><strong>Developers:</strong> Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood</p>
+</div>
 """, unsafe_allow_html=True)
+
 
 # 2️⃣ Load Means and Stds
 raw_data_path = "filtered_refinedDoE1.xlsx"
