@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 # 0️⃣ Custom CSS
 st.markdown("""
     <style>
-    body, .stApp, .block-container {
-        font-family: 'Times New Roman', Times, serif;
+    body, .stApp, .block-container, label, .stNumberInput label, .stFileUploader label {
+        font-family: 'Times New Roman', Times, serif !important;
     }
     .stApp {
         background-color: #f0f2f6;
     }
     .block-container {
-        padding-top: 5px;
+        padding-top: 10px;
         padding-bottom: 5px;
     }
     .stFileUploader {
@@ -22,31 +22,33 @@ st.markdown("""
         border-radius: 5px !important;
         border: 1px solid #888 !important;
         padding: 8px !important;
+        font-family: 'Times New Roman', Times, serif !important;
     }
     .stNumberInput input {
         background-color: #ddd !important;
         border-radius: 5px !important;
         padding: 6px !important;
-        font-family: 'Times New Roman', Times, serif;
+        font-family: 'Times New Roman', Times, serif !important;
     }
     .stButton>button {
         background-color: #444 !important;
         color: white !important;
         border-radius: 5px !important;
-        font-family: 'Times New Roman', Times, serif;
+        font-family: 'Times New Roman', Times, serif !important;
     }
     .stMarkdown, .stSubheader, .stHeading, .stSuccess, .stWarning {
-        font-family: 'Times New Roman', Times, serif;
+        font-family: 'Times New Roman', Times, serif !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # 1️⃣ App Header
 st.markdown("""
+<br>
 # MIDR Prediction App  
 Developed by **Teesside University**  
 **Developers:** Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood
-""")
+""", unsafe_allow_html=True)
 
 # 2️⃣ Load Means and Stds
 raw_data_path = "filtered_refinedDoE1.xlsx"
