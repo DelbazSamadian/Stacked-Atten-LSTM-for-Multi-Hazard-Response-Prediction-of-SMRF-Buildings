@@ -4,6 +4,9 @@ import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 
+# Page configuration
+st.set_page_config(page_title="MIDR Prediction App forMulti-Hazard Response Prediction of SMRF Buildings", layout="wide")
+
 # 0️⃣ Custom CSS
 st.markdown("""
     <style>
