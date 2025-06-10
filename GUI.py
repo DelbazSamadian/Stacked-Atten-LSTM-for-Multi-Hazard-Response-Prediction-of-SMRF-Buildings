@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # 0️⃣ Custom CSS
 st.markdown("""
     <style>
-    body, .stApp, .block-container, .stTextInput, .stNumberInput, .stFileUploader, .stButton {
+    body, .stApp, .block-container {
         font-family: 'Times New Roman', Times, serif;
     }
     .stApp {
@@ -17,33 +17,41 @@ st.markdown("""
         padding-top: 5px;
         padding-bottom: 5px;
     }
+    img {
+        max-height: 80px;
+    }
     .stFileUploader {
+        padding: 8px !important;
+        background-color: #ddd !important;
+        border-radius: 5px !important;
+        border: 1px solid #888 !important;
+    }
+    .stNumberInput input, .stTextInput input {
+        background-color: #ddd !important;
+        border-radius: 5px !important;
         padding: 6px !important;
-        margin-bottom: 6px !important;
+        font-family: 'Times New Roman', Times, serif;
     }
-    .stFileUploader > div {
-        border: 2px solid #888 !important;
-        background-color: #ddd !important;
-    }
-    .stTextInput > div > input, .stNumberInput > div > input {
-        background-color: #ddd !important;
-        border-radius: 5px;
-        padding: 6px;
-    }
-    .stButton > button {
+    .stButton>button {
         background-color: #444 !important;
         color: white !important;
-        border-radius: 5px;
+        border-radius: 5px !important;
+        font-family: 'Times New Roman', Times, serif;
     }
-    .stImage > img {
-        max-width: 80px;
-        height: auto;
+    .stMarkdown {
+        font-family: 'Times New Roman', Times, serif;
+    }
+    .stSuccess, .stWarning {
+        font-family: 'Times New Roman', Times, serif;
+    }
+    .stHeading {
+        font-family: 'Times New Roman', Times, serif;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # 1️⃣ App Header
-st.image("OIP.jpeg", use_column_width=False)
+st.image("OIP.jpeg", use_column_width=True)
 st.markdown("""
 # MIDR Prediction App  
 Developed by **Teesside University**  
@@ -110,8 +118,8 @@ col1, col2, col3 = st.columns([1.2, 1.5, 1.2])
 # Sa Uploads & Plots
 with col1:
     st.subheader("Sa Input")
-    file_sa1 = st.file_uploader("Sa1 (.txt)", type="txt", label_visibility="collapsed")
-    file_sa2 = st.file_uploader("Sa2 (.txt)", type="txt", label_visibility="collapsed")
+    file_sa1 = st.file_uploader("Sa1 (.txt)", type="txt")
+    file_sa2 = st.file_uploader("Sa2 (.txt)", type="txt")
     dt = st.number_input("dt (sec)", value=0.005, step=0.001)
     def process_time(file, dt):
         try:
