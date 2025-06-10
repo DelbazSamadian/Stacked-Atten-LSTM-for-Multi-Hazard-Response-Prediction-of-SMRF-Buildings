@@ -124,7 +124,7 @@ with col1_right:
         try:
             data1 = np.loadtxt(file_sa1).flatten(order='C')
             time1 = np.arange(0, len(data1) * dt, dt)
-            fig1, ax1 = plt.subplots(figsize=(5, 2.5))
+            fig1, ax1 = plt.subplots(figsize=(3, 1.0))
             ax1.plot(time1, data1)
             ax1.set_xlabel("Time (sec)")
             ax1.set_ylabel("Sa (g)")
@@ -142,7 +142,7 @@ with col2_right:
         try:
             data2 = np.loadtxt(file_sa2).flatten(order='C')
             time2 = np.arange(0, len(data2) * dt, dt)
-            fig2, ax2 = plt.subplots(figsize=(5, 2.5))
+            fig2, ax2 = plt.subplots(figsize=(3, 1.0))
             ax2.plot(time2, data2)
             ax2.set_xlabel("Time (sec)")
             ax2.set_ylabel("Sa (g)")
