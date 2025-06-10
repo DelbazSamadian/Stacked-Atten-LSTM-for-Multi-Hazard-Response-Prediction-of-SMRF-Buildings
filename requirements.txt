@@ -1,5 +1,7 @@
+streamlit
 torch
 numpy
 pandas
-streamlit
 openpyxl
+# ...add any other dependencies your app needs here
+
