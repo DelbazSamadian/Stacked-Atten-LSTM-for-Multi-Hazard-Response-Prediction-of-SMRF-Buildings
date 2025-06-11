@@ -116,11 +116,11 @@ model.eval()
 dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
 
 # Sa1 Component
-st.subheader("1️⃣ Sa1 Component")
+st.subheader("1️⃣ Ground Motion Record: Component 1")
 col1_left, col1_right = st.columns([1, 1])  # Evenly split the space
 
 with col1_left:
-    file_sa1 = st.file_uploader("Upload Sa1 (.txt)", type="txt")
+    file_sa1 = st.file_uploader("Upload Acceleration_1 (.txt)", type="txt")
     # Optionally, add a placeholder text or description here.
 
 with col1_right:
@@ -131,8 +131,8 @@ with col1_right:
             fig1, ax1 = plt.subplots(figsize=(4, 2))
             ax1.plot(time1, data1, color='blue', linewidth=1)
             ax1.set_xlabel("Time (sec)", fontsize=8)
-            ax1.set_ylabel("Sa (g)", fontsize=8)
-            ax1.set_title("Sa1 Time History", fontsize=10)
+            ax1.set_ylabel("Acceleration (g)", fontsize=8)
+            ax1.set_title("Acceleration Time History (X direction)", fontsize=10)
             ax1.tick_params(labelsize=6)
             plt.tight_layout()
             st.pyplot(fig1)
@@ -143,10 +143,10 @@ with col1_right:
 
 
 
-st.subheader("2️⃣ Sa2 Component")
+st.subheader("2️⃣ Ground Motion Record: Component 2")
 col2_left, col2_right = st.columns([1, 1])
 with col2_left:
-    file_sa2 = st.file_uploader("Upload Sa2 (.txt)", type="txt")
+    file_sa2 = st.file_uploader("Upload Acceleration_2 (.txt)", type="txt")
 with col2_right:
     if file_sa2:
         try:
@@ -155,8 +155,8 @@ with col2_right:
             fig2, ax2 = plt.subplots(figsize=(4, 2))
             ax2.plot(time2, data2, color='blue', linewidth=1)
             ax2.set_xlabel("Time (sec)", fontsize=8)
-            ax2.set_ylabel("Sa (g)", fontsize=8)
-            ax2.set_title("Sa2 Time History", fontsize=10)
+            ax2.set_ylabel("Acceleration (g)", fontsize=8)
+            ax2.set_title("Acceleration Time History (Y direction)", fontsize=10)
             ax2.tick_params(labelsize=6)
             plt.tight_layout()
             st.pyplot(fig2)
