@@ -52,9 +52,19 @@ st.markdown("""
         <h1 style="margin-bottom: 0;">MIDR Prediction App for SMRF buildings Exposed to Sequential Earthquake-Flood Hazards</h1>
         <p style="margin-top: 0;">Developed by <strong>Teesside University</strong></p>
         <p style="margin-top: 0;"><strong>Developers:</strong> Delbaz Samadian, Annalisa Occhipinti, Imrose B. Muhit, Nashwan Dawood</p>
+        <div style="margin-top: 10px;">
+            <h3 style="margin-bottom: 5px;">How the App Works</h3>
+            <ul style="margin-top: 0; padding-left: 20px;">
+                <li>Set the ground motion time step (Δt).</li>
+                <li>Upload acceleration records in the X and Y directions.</li>
+                <li>Enter values for the top 10 most important features.</li>
+                <li>Click <strong>Predict MIDR</strong> to estimate the structural response.</li>
+            </ul>
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
