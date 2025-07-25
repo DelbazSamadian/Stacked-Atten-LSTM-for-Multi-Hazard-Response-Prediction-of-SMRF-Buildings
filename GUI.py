@@ -177,7 +177,7 @@ with col2_right:
 
 
 # 6️⃣ Top 10 Features
-st.subheader("3️⃣ Enter Top 10 Most Important Features")
+st.subheader("3️⃣ Enter Top 10 Most Important Features identified through SHAP analysis")
 top_features = {
     'T1': 'Fundamental Period',
     'FH': 'Flood Height',
@@ -202,7 +202,7 @@ for i in range(0, len(keys), 2):
             user_inputs[key] = row[j].number_input(f"{key} ({desc}):", value=default_val)
 
 # 7️⃣ Prediction
-st.subheader("4️⃣ MIDR Prediction")
+st.subheader("4️⃣ MIDR Prediction using the trained Stack-AttenLSTM model")
 if st.button("Predict MIDR"):
     if file_sa1 and file_sa2:
         def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
