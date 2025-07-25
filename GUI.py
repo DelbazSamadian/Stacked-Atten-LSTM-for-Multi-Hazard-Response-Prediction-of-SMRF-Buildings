@@ -126,7 +126,7 @@ model.eval()
 dt = st.number_input("Time Step (dt in sec)", value=0.005, step=0.001)
 
 # Sa1 Component
-st.subheader("1️⃣ Ground Motion Record: Component 1")
+st.subheader("1️⃣ Ground Motion Record: Component 1 (Upload ground motion record in the X direction)")
 col1_left, col1_right = st.columns([1, 1])  # Evenly split the space
 
 with col1_left:
@@ -153,7 +153,7 @@ with col1_right:
 
 
 
-st.subheader("2️⃣ Ground Motion Record: Component 2")
+st.subheader("2️⃣ Ground Motion Record: Component 2 (Upload ground motion record in the Y direction)")
 col2_left, col2_right = st.columns([1, 1])
 with col2_left:
     file_sa2 = st.file_uploader("Upload Acceleration_2 (.txt)", type="txt")
