@@ -51,7 +51,7 @@ st.markdown("""
     <div>
         <h1 style="margin-bottom: 0;">MIDR Prediction App for SMRF buildings Exposed to Sequential Earthquake-Flood Hazards</h1>
         <p style="margin-top: 0;">Developed by <strong>Teesside University</strong></p>
-        <p style="margin-top: 0;"><strong>Developers:</strong> Delbaz Samadian, Imrose B. Muhit, Annalisa Occhipinti, Nashwan Dawood</p>
+        <p style="margin-top: 0;"><strong>Developers:</strong> Delbaz Samadian, Annalisa Occhipinti, Imrose B. Muhit, Nashwan Dawood</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
