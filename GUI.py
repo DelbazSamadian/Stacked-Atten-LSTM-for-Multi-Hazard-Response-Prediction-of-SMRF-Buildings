@@ -43,12 +43,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-# 🔰 Intro Description
-st.markdown("""
-<p style="font-size:16px; font-family: 'Times New Roman', Times, serif;">
-This is an app for predicting the multi-hazard response of 2-storey SMRF buildings exposed to sequential earthquake and flood scenarios.
-</p>
-""", unsafe_allow_html=True)
 # 1️⃣ App Header
 st.markdown("""
 <div style="display: flex; align-items: center; margin-top: 20px;">
@@ -57,6 +51,9 @@ st.markdown("""
         <h1 style="margin-bottom: 0;">MIDR Prediction App for SMRF buildings Exposed to Sequential Earthquake-Flood Hazards</h1>
         <p style="margin-top: 0;">Developed by <strong>Teesside University</strong></p>
         <p style="margin-top: 0;"><strong>Developers:</strong> Delbaz Samadian, Annalisa Occhipinti, Imrose B. Muhit, Nashwan Dawood</p>
+        <p style="margin-top: 10px; font-size: 16px;">
+            This is an app for predicting the multi-hazard response of 2-storey SMRF buildings exposed to sequential earthquake and flood scenarios.
+        </p>
         <div style="margin-top: 10px;">
             <h3 style="margin-bottom: 5px;">How the App Works</h3>
             <ul style="margin-top: 0; padding-left: 20px;">
@@ -69,6 +66,7 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
