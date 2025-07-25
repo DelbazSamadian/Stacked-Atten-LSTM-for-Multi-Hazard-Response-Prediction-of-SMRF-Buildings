@@ -43,7 +43,12 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
+# 🔰 Intro Description
+st.markdown("""
+<p style="font-size:16px; font-family: 'Times New Roman', Times, serif;">
+This is an app for predicting the multi-hazard response of 2-storey SMRF buildings exposed to sequential earthquake and flood scenarios.
+</p>
+""", unsafe_allow_html=True)
 # 1️⃣ App Header
 st.markdown("""
 <div style="display: flex; align-items: center; margin-top: 20px;">
