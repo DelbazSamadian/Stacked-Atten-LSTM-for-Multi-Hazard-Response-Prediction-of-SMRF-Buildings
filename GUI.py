@@ -188,7 +188,7 @@ top_features = {
     'ϴp_Col_Ex1': 'Pre-cap rot Ext Col 1',
     'Abeam1': 'Area Beam 1',
     'ϴpc_Col_In1': 'Post-cap rot Int Col 1',
-    'someFeature10': 'Additional Feature 10'
+    'Ibeam2': 'Moment of Inertia Beam 2'
 }
 user_inputs = {}
 keys = list(top_features.keys())
