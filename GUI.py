@@ -217,12 +217,14 @@ for i in range(0, len(keys), 2):
             desc = top_features[key]
             default_val = float(feature_means.get(key, 0.0))
             (min_val, max_val), unit = feature_ranges_units.get(key, ((0.0, 10000.0), ""))
+            label = f"{key} ({desc}) [{unit}] - Range: {min_val} to {max_val}"
             user_inputs[key] = row[j].number_input(
-                f"{key} ({desc}) [{unit}]:",
+                label,
                 value=float(default_val),
                 min_value=float(min_val),
                 max_value=float(max_val)
             )
+
 
 
 # 7️⃣ Prediction
@@ -253,4 +255,5 @@ if st.button("Predict MIDR"):
         st.success(f"Predicted MIDR: {midr:.6f}")
     else:
         st.warning("Upload both Sa1 & Sa2 and enter dt.")
+
 
