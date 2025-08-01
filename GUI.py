@@ -59,7 +59,7 @@ st.markdown("""
             <ul style="margin-top: 0; padding-left: 20px;">
                 <li>Set the ground motion time step (Δt).</li>
                 <li>Upload acceleration records in the X and Y directions.</li>
-                <li>Enter values for the top 10 most important features.</li>
+                <li>Enter values for the top 10 most important features. This features have been identified through SHAP analysis.</li>
                 <li>Click <strong>Predict MIDR</strong> to estimate the structural response.</li>
             </ul>
         </div>
@@ -180,7 +180,7 @@ with col2_right:
 
 
 # 6️⃣ Top 10 Features
-st.subheader("3️⃣ Enter Top 10 Most Important Features identified through SHAP analysis")
+st.subheader("3️⃣ Enter the values for the following features")
 top_features = {
     'T1': 'Fundamental Period',
     'FH': 'Flood Height',
@@ -195,6 +195,22 @@ top_features = {
 }
 user_inputs = {}
 keys = list(top_features.keys())
+# Acceptable input ranges for top features
+# Acceptable input ranges and units for top features
+feature_ranges_units = {
+    'T1': ((0.0, 2.0), "sec"),
+    'FH': ((0.5, 4.0), "m"),
+    'ϴp_Beam1': ((0.015, 0.045), "rad"),
+    'Ibeam1': ((1000, 7000), "in⁴"),
+    'M1': ((70, 91), "-"),
+    'ϴpc_Col_Ex1': ((0.05, 0.30), "rad"),
+    'ϴp_Col_Ex1': ((0.0, 0.10), "rad"),
+    'Abeam1': ((15, 55), "in²"),
+    'ϴpc_Col_In1': ((0.05, 0.30), "rad"),
+    'Ibeam2': ((500, 2500), "in⁴")
+}
+
+# User input section
 for i in range(0, len(keys), 2):
     row = st.columns(2)
     for j in range(2):
@@ -202,7 +218,11 @@ for i in range(0, len(keys), 2):
             key = keys[i + j]
             desc = top_features[key]
             default_val = feature_means.get(key, 0.0)
-            user_inputs[key] = row[j].number_input(f"{key} ({desc}):", value=default_val)
+            (min_val, max_val), unit = feature_ranges_units.get(key, ((0.0, 10000.0), ""))
+            user_inputs[key] = row[j].number_input(
+                f"{key} ({desc}) [{unit}]:", value=default_val, min_value=min_val, max_value=max_val
+            )
+
 
 # 7️⃣ Prediction
 st.subheader("4️⃣ MIDR Prediction using the trained Stack-AttenLSTM model")
