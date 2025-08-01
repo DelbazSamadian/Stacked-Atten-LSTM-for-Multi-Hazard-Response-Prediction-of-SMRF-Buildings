@@ -196,7 +196,6 @@ top_features = {
 user_inputs = {}
 keys = list(top_features.keys())
 # Acceptable input ranges for top features
-# Acceptable input ranges and units for top features
 feature_ranges_units = {
     'T1': ((0.0, 2.0), "sec"),
     'FH': ((0.5, 4.0), "m"),
@@ -210,17 +209,19 @@ feature_ranges_units = {
     'Ibeam2': ((500, 2500), "in⁴")
 }
 
-# User input section
 for i in range(0, len(keys), 2):
     row = st.columns(2)
     for j in range(2):
         if i + j < len(keys):
             key = keys[i + j]
             desc = top_features[key]
-            default_val = feature_means.get(key, 0.0)
+            default_val = float(feature_means.get(key, 0.0))
             (min_val, max_val), unit = feature_ranges_units.get(key, ((0.0, 10000.0), ""))
             user_inputs[key] = row[j].number_input(
-                f"{key} ({desc}) [{unit}]:", value=default_val, min_value=min_val, max_value=max_val
+                f"{key} ({desc}) [{unit}]:",
+                value=float(default_val),
+                min_value=float(min_val),
+                max_value=float(max_val)
             )
 
 
@@ -252,3 +253,4 @@ if st.button("Predict MIDR"):
         st.success(f"Predicted MIDR: {midr:.6f}")
     else:
         st.warning("Upload both Sa1 & Sa2 and enter dt.")
+
