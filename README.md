@@ -3,7 +3,7 @@
 Welcome to the **Stacked Attention LSTM for Multi-Hazard Response Prediction of SMRF Buildings** repository! This project provides a user-friendly web application built with Streamlit that predicts the Maximum inter storey drift ration (MIDR) of SMRF (Special Moment Resisting Frame) buildings exposed to sequential flood and earthquake. This can help engineers and researchers understand how structures perform under multiple hazards.
 
 # Features
-Predicts MISR given input parameters.  
+Predicts MIDR given input parameters.  
 Easy-to-use, interactive web interface with Streamlit.  
 Open-source, free to use and customize.  
 ---
