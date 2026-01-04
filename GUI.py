@@ -234,8 +234,8 @@ if st.button("Predict MIDR"):
         def norm(ts): return (ts - ts.mean()) / ts.std() if ts.std() > 0 else ts - ts.mean()
         ts1 = norm(data1)
         ts2 = norm(data2)
-        TIME_STEPS = 9000
-        pad_len = 9000 - min(len(ts1), len(ts2))
+        TIME_STEPS = 60000
+        pad_len = 60000 - min(len(ts1), len(ts2))
         ts1 = np.concatenate([ts1, np.full(pad_len, ts1.mean())]) if pad_len > 0 else ts1[:TIME_STEPS]
         ts2 = np.concatenate([ts2, np.full(pad_len, ts2.mean())]) if pad_len > 0 else ts2[:TIME_STEPS]
         ts_data = np.stack((ts1, ts2), axis=1)
@@ -255,5 +255,6 @@ if st.button("Predict MIDR"):
         st.success(f"Predicted MIDR: {midr:.6f}")
     else:
         st.warning("Upload both Sa1 & Sa2 and enter dt.")
+
 
 
